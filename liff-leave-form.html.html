@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แจ้งลา / ขอโอที</title>
+<script src="https://static.line-scdn.net/liff/edge/versions/2.22.3/sdk.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #06C755;
+    --green-dark: #05a847;
+    --green-light: #e8faf0;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans Thai', 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--green);
+    padding: 20px 20px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 0; right: 0;
+    height: 40px;
+    background: var(--bg);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 2px;
+    padding-left: 2px;
+  }
+
+  /* Profile pill */
+  .profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    padding: 5px 12px 5px 6px;
+    margin-top: 14px;
+    width: fit-content;
+  }
+  .avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green-dark);
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-name { font-size: 13px; color: #fff; font-weight: 500; }
+
+  /* Content */
+  .content { padding: 20px 16px 0; }
+
+  /* Type selector */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .type-btn {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .type-btn .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .type-btn .label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+  .type-btn.active {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+  .type-btn.active .label { color: var(--green-dark); }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 0.5px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+
+  /* Form fields */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .required::after { content: ' *'; color: #e24b4a; }
+
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"]:focus,
+  input[type="time"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--green);
+    background: #fff;
+  }
+  textarea { resize: none; line-height: 1.6; }
+
+  .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Days badge */
+  .days-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* OT time row */
+  .time-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .time-sep { font-size: 14px; color: var(--text-muted); text-align: center; }
+
+  /* File upload */
+  .upload-area {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .upload-area:active { background: var(--green-light); border-color: var(--green); }
+  .upload-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+  .upload-text { font-size: 13px; color: var(--text-muted); }
+  #file-input { display: none; }
+  .file-name {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--green-dark);
+    font-weight: 500;
+    display: none;
+  }
+
+  /* Submit button */
+  .submit-wrap {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 16px 24px;
+    background: linear-gradient(to top, var(--bg) 80%, transparent);
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .submit-btn:active { background: var(--green-dark); transform: scale(0.98); }
+  .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .success-circle {
+    width: 80px; height: 80px;
+    background: var(--green-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin-bottom: 20px;
+    animation: pop 0.4s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-screen h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .success-screen p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .ticket-box {
+    background: var(--green-light);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    margin: 20px 0;
+    border: 1px dashed var(--green);
+  }
+  .ticket-label { font-size: 12px; color: var(--green-dark); font-weight: 500; margin-bottom: 4px; }
+  .ticket-id { font-size: 28px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .close-btn {
+    margin-top: 8px;
+    padding: 12px 32px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Loading */
+  #loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 14px; color: var(--text-muted); }
+
+  .main { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>กำลังโหลด...</p>
+</div>
+
+<!-- Main Form -->
+<div class="main" id="main">
+
+  <div class="header">
+    <div class="header-top">
+      <div class="header-icon">📋</div>
+      <div>
+        <h1>แจ้งลา / ขอโอที</h1>
+      </div>
+    </div>
+    <p>กรอกข้อมูลให้ครบถ้วนเพื่อส่งคำขอ</p>
+    <div class="profile-pill">
+      <div class="avatar" id="avatar-el">
+        <span id="avatar-initials">?</span>
+      </div>
+      <span class="profile-name" id="profile-name">กำลังโหลด...</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ประเภท -->
+    <div class="card">
+      <div class="card-title">ประเภทคำขอ</div>
+      <div class="type-grid">
+        <div class="type-btn active" data-type="sick" onclick="selectType(this,'sick')">
+          <span class="icon">🤒</span>
+          <span class="label">ลาป่วย</span>
+        </div>
+        <div class="type-btn" data-type="vacation" onclick="selectType(this,'vacation')">
+          <span class="icon">🏖️</span>
+          <span class="label">ลาพักร้อน</span>
+        </div>
+        <div class="type-btn" data-type="personal" onclick="selectType(this,'personal')">
+          <span class="icon">🏠</span>
+          <span class="label">ลากิจ</span>
+        </div>
+        <div class="type-btn" data-type="ot" onclick="selectType(this,'ot')">
+          <span class="icon">⏰</span>
+          <span class="label">ขอโอที</span>
+        </div>
+        <div class="type-btn" data-type="wfh" onclick="selectType(this,'wfh')">
+          <span class="icon">💻</span>
+          <span class="label">Work from Home</span>
+        </div>
+        <div class="type-btn" data-type="other" onclick="selectType(this,'other')">
+          <span class="icon">📝</span>
+          <span class="label">อื่นๆ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- วันที่ (ลา) -->
+    <div class="card" id="card-date">
+      <div class="card-title">ช่วงเวลา</div>
+      <div class="field">
+        <label class="required">วันที่เริ่ม</label>
+        <input type="date" id="start-date" onchange="calcDays()">
+      </div>
+      <div class="field">
+        <label class="required">วันที่สิ้นสุด</label>
+        <input type="date" id="end-date" onchange="calcDays()">
+      </div>
+      <div id="days-display" style="display:none">
+        <div class="days-badge">
+          <span>📅</span>
+          <span id="days-text">0 วัน</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- เวลา OT -->
+    <div class="card" id="card-ot" style="display:none">
+      <div class="card-title">เวลาโอที</div>
+      <div class="field">
+        <label class="required">วันที่ทำโอที</label>
+        <input type="date" id="ot-date">
+      </div>
+      <div class="field">
+        <label class="required">ช่วงเวลา</label>
+        <div class="time-row">
+          <input type="time" id="ot-start" value="18:00">
+          <span class="time-sep">–</span>
+          <input type="time" id="ot-end" value="21:00">
+        </div>
+      </div>
+    </div>
+
+    <!-- เหตุผล -->
+    <div class="card">
+      <div class="card-title">รายละเอียด</div>
+      <div class="field">
+        <label class="required">เหตุผล</label>
+        <textarea id="reason" rows="3" placeholder="ระบุเหตุผล..."></textarea>
+      </div>
+      <div class="field">
+        <label>ผู้รับมอบหมายงาน (ถ้ามี)</label>
+        <input type="text" id="assignee" placeholder="ชื่อเพื่อนร่วมงาน"
+          style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:15px;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s;-webkit-appearance:none">
+      </div>
+    </div>
+
+    <!-- แนบเอกสาร (ลาป่วย) -->
+    <div class="card" id="card-doc" style="display:none">
+      <div class="card-title">เอกสารแนบ (ถ้ามี)</div>
+      <div class="upload-area" onclick="document.getElementById('file-input').click()">
+        <span class="upload-icon">📎</span>
+        <span class="upload-text">แตะเพื่อแนบใบรับรองแพทย์</span>
+      </div>
+      <input type="file" id="file-input" accept="image/*,.pdf" onchange="showFileName(this)">
+      <div class="file-name" id="file-name"></div>
+    </div>
+
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-wrap">
+    <button class="submit-btn" onclick="submitForm()">ส่งคำขอ</button>
+  </div>
+</div>
+
+<!-- Success Screen -->
+<div class="success-screen" id="success">
+  <div class="success-circle">✅</div>
+  <h2>ส่งคำขอสำเร็จ!</h2>
+  <p>ระบบได้รับเรื่องของคุณแล้ว<br>รอการอนุมัติจากผู้จัดการ</p>
+  <div class="ticket-box">
+    <div class="ticket-label">หมายเลขคำขอ</div>
+    <div class="ticket-id" id="ticket-id">-</div>
+  </div>
+  <p style="font-size:13px">คุณจะได้รับแจ้งผลผ่าน LINE เมื่ออนุมัติแล้ว</p>
+  <button class="close-btn" onclick="closeLiff()">ปิดหน้าต่าง</button>
+</div>
+
+<script>
+const LIFF_ID = "2010086549-tAtagb2N";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwJsWR3qVNSr5FiO4AxTrPuueA6ym0T4okYSAipC4cb2i29udKRvhp8EoE03Lp2Pyo/exec";
+
+let userData = {};
+let selectedType = "sick";
+
+async function init() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const profile = await liff.getProfile();
+    userData = profile;
+    document.getElementById("profile-name").textContent = profile.displayName;
+    const initials = profile.displayName.slice(0,2).toUpperCase();
+    document.getElementById("avatar-initials").textContent = initials;
+    if (profile.pictureUrl) {
+      document.getElementById("avatar-el").innerHTML = `<img src="${profile.pictureUrl}" alt="">`;
+    }
+  } catch(e) {
+    userData = { userId: "demo", displayName: "Demo User" };
+    document.getElementById("profile-name").textContent = "Demo User";
+    document.getElementById("avatar-initials").textContent = "DU";
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("start-date").value = today;
+  document.getElementById("end-date").value = today;
+  document.getElementById("ot-date").value = today;
+  calcDays();
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("main").style.display = "block";
+}
+
+function selectType(el, type) {
+  document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  selectedType = type;
+
+  document.getElementById("card-date").style.display = type === "ot" ? "none" : "block";
+  document.getElementById("card-ot").style.display = type === "ot" ? "block" : "none";
+  document.getElementById("card-doc").style.display = type === "sick" ? "block" : "none";
+}
+
+function calcDays() {
+  const s = new Date(document.getElementById("start-date").value);
+  const e = new Date(document.getElementById("end-date").value);
+  if (!isNaN(s) && !isNaN(e) && e >= s) {
+    const diff = Math.round((e - s) / 86400000) + 1;
+    document.getElementById("days-text").textContent = diff + " วัน";
+    document.getElementById("days-display").style.display = "block";
+  } else {
+    document.getElementById("days-display").style.display = "none";
+  }
+}
+
+function showFileName(input) {
+  const name = input.files[0]?.name;
+  const el = document.getElementById("file-name");
+  if (name) { el.textContent = "📎 " + name; el.style.display = "block"; }
+}
+
+async function submitForm() {
+  const reason = document.getElementById("reason").value.trim();
+  if (!reason) { alert("กรุณาระบุเหตุผล"); return; }
+
+  const typeLabels = { sick:"ลาป่วย", vacation:"ลาพักร้อน", personal:"ลากิจ", ot:"ขอโอที", wfh:"Work from Home", other:"อื่นๆ" };
+  const btn = document.querySelector(".submit-btn");
+  btn.disabled = true;
+  btn.textContent = "กำลังส่ง...";
+
+  const payload = {
+    userId: userData.userId || "demo",
+    displayName: userData.displayName || "Demo",
+    type: selectedType,
+    typeLabel: typeLabels[selectedType],
+    startDate: document.getElementById("start-date").value,
+    endDate: document.getElementById("end-date").value,
+    otDate: document.getElementById("ot-date").value,
+    otStart: document.getElementById("ot-start").value,
+    otEnd: document.getElementById("ot-end").value,
+    reason: reason,
+    assignee: document.getElementById("assignee").value,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {}
+
+  const ticketId = "HR" + Date.now().toString().slice(-6);
+  document.getElementById("ticket-id").textContent = ticketId;
+  document.getElementById("main").style.display = "none";
+  document.getElementById("success").style.display = "flex";
+}
+
+function closeLiff() {
+  try { liff.closeWindow(); } catch(e) { window.close(); }
+}
+
+init();
+</script>
+</body>
+</html>
